@@ -28,6 +28,10 @@ public class Lives {
         lives --;
     }
 
+    public void decrementLives(int amount) {
+        lives -= amount;
+    }
+
     public int getLives(){
         return lives;
     }

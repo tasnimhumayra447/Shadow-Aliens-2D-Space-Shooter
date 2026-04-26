@@ -21,7 +21,8 @@ public class Wave {
 
     public void drawWave(){
         DrawOptions options = new DrawOptions();
-        font.drawString(waveText + " " + WAVE_NUM, waveX, waveY, options.setBlendColour(textColour));
+        font.drawString(waveText + " " + WAVE_NUM, waveX, waveY,
+                options.setBlendColour(textColour));
     }
 
 }

@@ -11,7 +11,8 @@ public class Projectile {
 
     public Projectile(Properties gameProps, double projectileX, double projectileY){
         projectileImage = new Image(gameProps.getProperty("projectile.image"));
-        speed = Integer.parseInt(gameProps.getProperty("projectile.movementSpeed"));
+        speed = Integer.parseInt(
+                gameProps.getProperty("projectile.movementSpeed"));
         this.projectileX = projectileX;
         this.projectileY = projectileY;
     }
@@ -52,7 +53,8 @@ public class Projectile {
     }
 
     public Rectangle getBoundingBoxAt() {
-        return projectileImage.getBoundingBoxAt(new Point(projectileX, projectileY));
+        return projectileImage.getBoundingBoxAt(
+                new Point(projectileX, projectileY));
     }
 
 

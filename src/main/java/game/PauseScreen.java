@@ -30,12 +30,15 @@ public class PauseScreen {
         titleFont = new Font(gameProps.getProperty("text.font"), titleSize);
 
         // centre of text lands on centre of screen
-        titleX = ShadowAliens.screenWidth / 2.0 - titleFont.getWidth(titleText) / 2.0;
+        titleX = ShadowAliens.screenWidth / 2.0
+                - titleFont.getWidth(titleText) / 2.0;
 
         // controls list
         controls = gameProps.getProperty("controlsList.text").split(",");
-        controlsStartY = Double.parseDouble(gameProps.getProperty("controlsList.startPosY"));
-        rowGap = Double.parseDouble(gameProps.getProperty("controlsList.rowGap"));
+        controlsStartY = Double.parseDouble(
+                gameProps.getProperty("controlsList.startPosY"));
+        rowGap = Double.parseDouble(
+                gameProps.getProperty("controlsList.rowGap"));
         defaultFont = new Font(gameProps.getProperty("text.font"),
                 Integer.parseInt(gameProps.getProperty("text.size")));
 
@@ -49,19 +52,24 @@ public class PauseScreen {
 
     public void draw(int timeScale, double actualSpeed) {
         // draw title centred
-        titleFont.drawString(titleText, titleX, titleY, new DrawOptions().setBlendColour(textColour));
+        titleFont.drawString(titleText, titleX, titleY,
+                new DrawOptions().setBlendColour(textColour));
 
         // draw controls list
         for (int i = 0; i < controls.length; i++) {
-            double x = ShadowAliens.screenWidth / 2.0 - defaultFont.getWidth(controls[i]) / 2.0;
+            double x = ShadowAliens.screenWidth / 2.0
+                    - defaultFont.getWidth(controls[i]) / 2.0;
             double y = controlsStartY + i * rowGap;
-            defaultFont.drawString(controls[i], x, y, new DrawOptions().setBlendColour(textColour));
+            defaultFont.drawString(controls[i], x, y,
+                    new DrawOptions().setBlendColour(textColour));
         }
 
         // draw timescale
         DrawOptions options = new DrawOptions();
-        String displayScale = timeScale > 0 ? String.valueOf(timeScale) : String.format("%.2f", actualSpeed);
-        defaultFont.drawString(timescaleText + " " + displayScale, timescaleX, timescaleY,
+        String displayScale = timeScale > 0 ?
+                String.valueOf(timeScale) : String.format("%.2f", actualSpeed);
+        defaultFont.drawString(timescaleText + " " + displayScale,
+                timescaleX, timescaleY,
                 options.setBlendColour(textColour));
     }
 }

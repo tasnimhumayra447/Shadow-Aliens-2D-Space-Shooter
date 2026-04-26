@@ -16,17 +16,17 @@ public class ShadowAliens extends AbstractGame {
     private final Score score;
     private final PlayerShip playerShip;
 
-    private double frameCount = 0;
+    private double frameCount = 0;        // tracks game time
     private int timeScale = 1;
     private boolean invincible = false;
 
     private final EnemyShip[] enemies;
     private int enemyCount = 0;
 
-    private Projectile[] projectiles = new Projectile[1000]; // max shots, check ASSUMPTIONS
+    private Projectile[] projectiles = new Projectile[1000]; // see ASSUMPTIONS
     private int projectileCount = 0;
 
-    private Explosion[] explosions = new Explosion[1000]; // max shots, check ASSUMPTIONS
+    private Explosion[] explosions = new Explosion[1000];    // see ASSUMPTIONS
     private int explosionCount = 0;
 
     private final PauseScreen pauseScreen;
@@ -41,13 +41,13 @@ public class ShadowAliens extends AbstractGame {
         screenWidth = Integer.parseInt(gameProps.getProperty("window.width"));
         screenHeight = Integer.parseInt(gameProps.getProperty("window.height"));
 
-        // background colour
+        // set background colour
         String[] bgColour = gameProps.getProperty("background.colour").split(",");
         Window.setClearColour(Double.parseDouble(bgColour[0]),
                 Double.parseDouble(bgColour[1]),
                 Double.parseDouble(bgColour[2]));
 
-        // text colour
+        // set text colour
         String[] textColour = gameProps.getProperty("text.colour").split(",");
         Colour colour = new Colour(Double.parseDouble(textColour[0]),
                 Double.parseDouble(textColour[1]),
@@ -55,6 +55,8 @@ public class ShadowAliens extends AbstractGame {
 
         Font font = new Font(gameProps.getProperty("text.font"),
                 Integer.parseInt(gameProps.getProperty("text.size")));
+
+        // Initialise all game entities
         pauseScreen = new PauseScreen(gameProps, colour);
         lives = new Lives(gameProps);
         wave = new Wave(gameProps, font, colour);
@@ -87,28 +89,36 @@ public class ShadowAliens extends AbstractGame {
         score.reset();
         playerShip.reset();
 
-        // recreate enemies
+        // recreate all enemies
         for (int i = 0; i < enemyCount; i++) {
             enemies[i] = new EnemyShip(gameProps, i);
         }
     }
 
+    private void drawShip(Ship ship) {
+        ship.drawShip();
+    }
+
     private void drawBattleScreen(){
+
         lives.drawLives();
         wave.drawWave();
         score.drawScore();
-        playerShip.drawShip();
+        drawShip(playerShip);
 
+        // draw the active enemies only
         for (int i = 0; i < enemyCount; i++) {
             if (enemies[i].isDestroyed()) continue;
-            enemies[i].drawShip();
+            drawShip(enemies[i]);
         }
 
+        // draw the active projectiles only
         for (int i = 0; i < projectileCount; i++) {
             if (projectiles[i] == null || projectiles[i].isDestroyed()) continue;
             projectiles[i].drawProjectile();
         }
 
+        // draw active explosions only
         for (int i = 0; i < explosionCount; i++) {
             if (explosions[i].isDestroyed()) continue;
             explosions[i].drawExplosion();
@@ -123,17 +133,22 @@ public class ShadowAliens extends AbstractGame {
     @Override
     protected void update(Input input) {
         drawBattleScreen();
+
         if (input.wasPressed(Keys.ESCAPE)) {
             paused = !paused;
         }
 
+        // INPUT: Dev-mode Controls
+        // increase speed by factor of 1
         if (input.wasPressed(Keys.G)) {
-            if (timeScale == -2) timeScale = 1;
+            if (timeScale == -2) timeScale = 1;     // skip speed of 0
             else if (timeScale < 0) timeScale++;
             else timeScale++;
         }
+
+        // decrease speed by factor of 1
         if (input.wasPressed(Keys.F)) {
-            if (timeScale == 1) timeScale = -2;
+            if (timeScale == 1) timeScale = -2;    // skip speed of 0
             else if (timeScale < 0) timeScale--;
             else timeScale--;
         }
@@ -141,19 +156,21 @@ public class ShadowAliens extends AbstractGame {
         if (input.wasPressed(Keys.I)) {
             invincible = !invincible;
         }
-
         if (input.wasPressed(Keys.R)) {
             resetGame();
         }
 
-        double actualSpeed = timeScale > 0 ? timeScale : 1.0 / Math.abs(timeScale);
+        // if actualSpeed > 1, then speed up, otherwise slow down
+        double actualSpeed = timeScale > 0 ?
+                timeScale : 1.0 / Math.abs(timeScale);
 
+        // skip the game logic since game is frozen
         if (paused) {
             pauseScreen.draw(timeScale, actualSpeed);
             return;
         }
 
-        // only when not paused:
+        // only run game logic when not paused:
         frameCount += actualSpeed;
 
         playerShip.update(input);
@@ -177,11 +194,14 @@ public class ShadowAliens extends AbstractGame {
         for (int j = 0; j < enemyCount; j++) {
             if (enemies[j].isDestroyed()) continue;
 
-            // check for collision with player
-            if (playerShip.getBoundingBoxAt().intersects(enemies[j].getBoundingBoxAt())){
+            // if collision, destroy enemy
+            // and player loses a life, unless invincible
+            if (playerShip.getBoundingBoxAt().intersects(
+                    enemies[j].getBoundingBoxAt())){
                 enemies[j].setDestroyed();
                 if (!invincible) {
                     lives.decrementLives();
+                    // no lives left
                     if (lives.getLives() <= 0) {
                         Window.close();
                     }
@@ -197,11 +217,13 @@ public class ShadowAliens extends AbstractGame {
             }
             projectiles[i].update();
 
+            // check if any enemy collides with this projectile
             for (int j = 0; j < enemyCount; j++) {
                 if (enemies[j].isDestroyed()) continue;
 
-                // check for collision with projectile
-                if (projectiles[i].getBoundingBoxAt().intersects(enemies[j].getBoundingBoxAt())){
+                // destroy both and increment score and launch an explosion
+                if (projectiles[i].getBoundingBoxAt().intersects(
+                        enemies[j].getBoundingBoxAt())){
                        projectiles[i].setDestroyed();
                        enemies[j].setDestroyed();
                        explosions[explosionCount++] = new Explosion(gameProps,

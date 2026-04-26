@@ -28,9 +28,14 @@ public class Score {
         score ++;
     }
 
+    public void incrementScore(int amount) {
+        score += amount;
+    }
+
     public void drawScore(){
         DrawOptions options = new DrawOptions();
-        font.drawString(scoreText + " " + score, scoreX, scoreY, options.setBlendColour(textColour));
+        font.drawString(scoreText + " " + score, scoreX, scoreY,
+                options.setBlendColour(textColour));
     }
 
     public void reset() {
