@@ -3,6 +3,10 @@
 # Shadow Aliens
 
 ## Running Instructions
+Download and extract the zip file for this project
+Open IntelliJ IDEA
+Click Open and select the extracted folder
+Select ShadowAliens.java and click the green Run button
 
 ## Assumptions
 
