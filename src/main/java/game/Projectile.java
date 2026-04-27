@@ -25,15 +25,15 @@ public class Projectile {
         return destroyed;
     }
 
-    public void update(){
+    public void update(double actualSpeed){
         if (destroyed){
             return;     // nothing to do
         }
 
-        projectileY -= speed;
+        projectileY -= speed * actualSpeed;
 
 
-        // fully off top when bottom edge < 0
+        // fully off top when entire image is above y=0
         if (projectileY + projectileImage.getHeight() / 2.0 < 0) {
             destroyed = true;
             return;

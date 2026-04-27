@@ -3,7 +3,7 @@ import bagel.*;
 import java.util.Properties;
 
 public class Explosion {
-    private int duration;
+    private double duration;
     private final double explosionX;
     private final double explosionY;
     private boolean destroyed = false;
@@ -20,18 +20,18 @@ public class Explosion {
         explosionImage.draw(explosionX, explosionY);
     }
 
-    public void decrementDuration(){
-        duration --;
+    public void decrementDuration(double actualSpeed){
+        duration -= actualSpeed;
         if (duration <= 0){
             destroyed = true;
         }
     }
 
-    public void update(){
+    public void update(double actualSpeed){
         if (destroyed){
             return;
         }
-        decrementDuration();
+        decrementDuration(actualSpeed);
     }
 
     public boolean isDestroyed() {

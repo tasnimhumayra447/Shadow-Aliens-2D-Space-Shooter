@@ -8,7 +8,7 @@ public class PlayerShip extends Ship{
     private final double initialY;
     private final double speed;
     private final int coolDown;
-    private int coolDownTimer = 0;
+    private double coolDownTimer = 0;
 
     public PlayerShip(Properties gameProps){
         initialX = ShadowAliens.screenWidth / 2.0;
@@ -33,12 +33,12 @@ public class PlayerShip extends Ship{
         coolDownTimer = coolDown;
     }
 
-    private void moveShip(Input input){
+    private void moveShip(Input input, double actualSpeed){
         boolean movingLeft = input.isDown(Keys.A) || input.wasPressed(Keys.A);
         boolean movingRight = input.isDown(Keys.D) || input.wasPressed(Keys.D);
 
-        if (movingLeft && !movingRight) super.setX(super.getX() - speed);
-        if (movingRight && !movingLeft) super.setX(super.getX() + speed);
+        if (movingLeft && !movingRight) super.setX(super.getX() - speed*actualSpeed);
+        if (movingRight && !movingLeft) super.setX(super.getX() + speed*actualSpeed);
 
         // check if ship outside boundaries
         double halfWidth = super.getShipImage().getWidth() / 2.0;
@@ -50,11 +50,12 @@ public class PlayerShip extends Ship{
             super.setX(ShadowAliens.screenWidth - halfWidth);
         }
 
-        if (coolDownTimer > 0) coolDownTimer--;
+        if (coolDownTimer > 0) coolDownTimer -= actualSpeed;
+        if (coolDownTimer < 0) coolDownTimer = 0;
     }
 
-    public void update(Input input) {
-        moveShip(input);
+    public void update(Input input, double actualSpeed) {
+        moveShip(input, actualSpeed);
     }
 
     public void reset(){

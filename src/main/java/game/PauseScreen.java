@@ -11,7 +11,6 @@ public class PauseScreen {
     private final Colour textColour;
     private final double titleX;
     private final double titleY;
-    private final int titleSize;
 
     private final Font defaultFont;
     private final String[] controls;
@@ -26,7 +25,7 @@ public class PauseScreen {
         titleText = gameProps.getProperty("pausedTitle.text");
         textColour = colour;
         titleY = Double.parseDouble(gameProps.getProperty("pausedTitle.posY"));
-        titleSize = Integer.parseInt(gameProps.getProperty("pausedTitle.size"));
+        int titleSize = Integer.parseInt(gameProps.getProperty("pausedTitle.size"));
         titleFont = new Font(gameProps.getProperty("text.font"), titleSize);
 
         // centre of text lands on centre of screen

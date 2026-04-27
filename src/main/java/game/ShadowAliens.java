@@ -42,7 +42,8 @@ public class ShadowAliens extends AbstractGame {
         screenHeight = Integer.parseInt(gameProps.getProperty("window.height"));
 
         // set background colour
-        String[] bgColour = gameProps.getProperty("background.colour").split(",");
+        String[] bgColour = gameProps.getProperty(
+                "background.colour").split(",");
         Window.setClearColour(Double.parseDouble(bgColour[0]),
                 Double.parseDouble(bgColour[1]),
                 Double.parseDouble(bgColour[2]));
@@ -100,29 +101,29 @@ public class ShadowAliens extends AbstractGame {
     }
 
     private void drawBattleScreen(){
+        // First draw background/effects
+        for (int i = 0; i < explosionCount; i++) {
+            if (explosions[i].isDestroyed()) continue;
+            explosions[i].drawExplosion();
+        }
 
-        lives.drawLives();
-        wave.drawWave();
-        score.drawScore();
-        drawShip(playerShip);
-
-        // draw the active enemies only
+        // then draw ships on top of effects
         for (int i = 0; i < enemyCount; i++) {
             if (enemies[i].isDestroyed()) continue;
             drawShip(enemies[i]);
         }
+        drawShip(playerShip);
 
-        // draw the active projectiles only
+        // then draw projectiles on top of ships
         for (int i = 0; i < projectileCount; i++) {
             if (projectiles[i] == null || projectiles[i].isDestroyed()) continue;
             projectiles[i].drawProjectile();
         }
 
-        // draw active explosions only
-        for (int i = 0; i < explosionCount; i++) {
-            if (explosions[i].isDestroyed()) continue;
-            explosions[i].drawExplosion();
-        }
+        // finally, draw information on top of all other images
+        lives.drawLives();
+        wave.drawWave();
+        score.drawScore();
     }
 
 
@@ -173,14 +174,14 @@ public class ShadowAliens extends AbstractGame {
         // only run game logic when not paused:
         frameCount += actualSpeed;
 
-        playerShip.update(input);
+        playerShip.update(input, actualSpeed);
 
         for (EnemyShip enemy : enemies) {
-            enemy.update(frameCount);
+            enemy.update(frameCount, actualSpeed);
         }
 
         for (int i = 0; i < explosionCount; i++) {
-            explosions[i].update();
+            explosions[i].update(actualSpeed);
         }
 
         // check if shoot
@@ -215,7 +216,7 @@ public class ShadowAliens extends AbstractGame {
             if (projectiles[i] == null || projectiles[i].isDestroyed()){
                 continue;
             }
-            projectiles[i].update();
+            projectiles[i].update(actualSpeed);
 
             // check if any enemy collides with this projectile
             for (int j = 0; j < enemyCount; j++) {

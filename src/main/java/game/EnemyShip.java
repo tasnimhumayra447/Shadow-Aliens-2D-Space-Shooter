@@ -4,7 +4,6 @@ import bagel.DrawOptions;
 import bagel.Image;
 
 import java.util.Properties;
-import java.lang.Math;
 
 public class EnemyShip extends Ship{
     private final int arrivalTime;
@@ -33,7 +32,7 @@ public class EnemyShip extends Ship{
     }
 
 
-    public void update(double frameCount){
+    public void update(double frameCount, double actualSpeed){
         if (destroyed){
             return;
         }
@@ -44,7 +43,7 @@ public class EnemyShip extends Ship{
         }
 
         if (active){
-            super.setY(super.getY()+speed);
+            super.setY(super.getY() + speed * actualSpeed);
         }
 
         // destroy if fully off bottom

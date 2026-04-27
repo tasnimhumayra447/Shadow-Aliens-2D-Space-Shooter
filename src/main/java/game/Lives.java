@@ -14,7 +14,7 @@ public class Lives {
         lives = initialLives;
         livesX = Double.parseDouble(livesPosition[0]);
         livesY = Double.parseDouble(livesPosition[1]);
-        livesGap = Integer.parseInt(gameProps.getProperty("playerLives.gap"));
+        livesGap = Double.parseDouble(gameProps.getProperty("playerLives.gap"));
         livesImage = new Image (gameProps.getProperty("playerLives.image"));
     }
 

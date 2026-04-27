@@ -20,10 +20,6 @@ public class Score {
         scoreY = Double.parseDouble(scorePosition[1]);
     }
 
-    public void updateScore(int newScore){
-        this.score = newScore;
-    }
-
     public void incrementScore(){
         score ++;
     }
