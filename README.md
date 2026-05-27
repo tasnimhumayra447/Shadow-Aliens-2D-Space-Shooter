@@ -1,5 +1,5 @@
 # SWEN20003 Semester 1, 2026
-# Project 1
+# Project 2b
 # Shadow Aliens
 
 ## Running Instructions
@@ -10,7 +10,7 @@ Select ShadowAliens.java and click the green Run button
 
 ## Assumptions
 
-* The maximum number of projectiles and explosions is 1000 each. (according to what Josh said in Post 98 on Ed)
+* None
 
 ## AI Statement
 I have not used any AI tools or technologies to prepare this assessment. 
@@ -21,31 +21,32 @@ I have not used any AI tools or technologies to prepare this assessment.
 
 ## Design Report
 
-### OOP
-Encapsulation: PlayerShip.java lines 6-65 use Encapsulation. 
-This involves the PlayerShip class only. By defining PlayerShip, I have grouped all attributes of the PlayerShip class together with all the methods that manipulate them into a single class.
+### Extension:
+Project 1 had a single enemy type that moved straight down the screen. Project 2 extended this with three types: regular, strafing, and shooting enemies, each with unique behaviour.
 
-Delegation: ShadowAliens.java lines 102-126 use Delegation.
-The classes involved are: ShadowAliens, Lives, Wave, Score, PlayerShip, EnemyShip, Projectile, and Explosion.
-The ShadowAliens class delegates its drawing responsibility to the other classes because the drawBattleScreen() method calls the respective draw methods of each class, for example, lives.drawLives(), wave.drawWave() etc.
+## Code Changes and Depth
+Project 1 had no BattleScreen or GameEntity class, so all game logic was inside ShadowAliens. The single EnemyShip class handled all enemy behaviour. Ship existed as a base class for shared movement behaviour. 
 
-Polymorphism: ShadowAliens.java lines 98-100 use Polymorphism.
-The classes involved are ShadowAliens, Ship, PlayerShip, and EnemyShip. 
-ShadowAliens has a private helper method drawShip(Ship ship) which calls ship.drawShip() through a Ship reference.
-When passed a PlayerShip object, PlayerShip.drawShip() is called, and when passed an EnemyShip object, EnemyShip.drawShip() is called.
+Several significant and deep changes were made:
+1. GameEntity was introduced as a new abstract base class above Ship, to encapsulate shared state like position, image, and bounding box ( this logic was previously scattered across many classes)
+2. Ship was modified to extend GameEntity, which cascaded to PlayerShip and EnemyShip.
+3. The existing EnemyShip class was made abstract. 3 concrete subclasses of EnemyShip, RegularEnemy, StrafingEnemy, and ShootingEnemy, were added, each overriding update(), draw(), and getScore(). 
+4. BattleScreen was introduced as a dedicated class to manage gameplay logic that was extracted from ShadowAliens (Project 1 had all game logic in ShadowAliens), and new methods loadWave(), checkCollisions(), isWaveComplete() were added. ShadowAliens was simplified to a thin entry point.
 
+## Design Principles in Project 1
+Ship, as a base class, showed some use of inheritance and abstraction, but there was no polymorphism across enemy types, as there was 1 enemy class. Multiple logics (text displays, player movement, collision checks) inside ShadowAliens resulted in low cohesion and violated the single responsibility principle. It also made it difficult to extend, as adding a new enemy type would require modifying the main game class directly, violating the open-closed principle. No GameEntity abstraction existed, so shared behaviour like image rendering was repeated across every class.
 
-### Design choice
-I have separated draw() and update() functionality for the classes mentioned below. Each class has a draw() method and an update() method, and update() does not call draw() internally.
-The classes involved are ShadowAliens, PlayerShip, EnemyShip, Projectile, and Explosion. 
-ShadowAliens calls all draw methods together in drawBattleScreen(), and all update methods separately in its update() method.
+## How the Extension Was Made Harder
+The existing Ship class gave a foundation to build on, and EnemyShip extended it naturally. However, the absence of GameEntity meant position attributes and image rendering had to be abstracted from scratch before the enemy hierarchy could be built; this required changes across multiple existing classes before new enemy types could even be written. The lack of BattleScreen meant that significant restructuring of ShadowAliens was necessary. Had these abstractions existed in Project 1, adding new enemy types would have required only new subclasses with no changes to existing code.
 
-An alternative would be to call draw() inside update() for every class, so updating and rendering happen in one update call for each entity, which was my original design. This approach would have meant ShadowAliens only needs to implement its update() method, which calls each class's update method, which internally handles its own drawing. So ShadowAliens doesn't have to deal with drawing logic explicitly through a drawBattleScreen() method. 
+### Outcome
+Introducing GameEntity above Ship means shared behaviour is abstracted once and inherited everywhere, improving cohesion as each class now has well-defined functions. Wave loading uses the method EnemyShip.create() to encapsulate and centralise object creation, so BattleScreen is unaware of specific enemy types entirely. This reduces coupling between BattleScreen and the enemy hierarchy.  
 
-However, the implemented design choice is more maintainable because it allows the pause screen to reuse drawBattleScreen() directly without running any game logic. 
-Freezing the game simply means calling drawBattleScreen() without calling any entity update methods. 
+Placing shoot() inside EnemyShip with a default null return and letting ShootingEnemy override means BattleScreen can call e.shoot() on every enemy without any instanceof checks (further reducing coupling); this is a clean application of polymorphism. Similarly, having getScore() as an abstract method inside EnemyShip means each subclass owns its score value, so BattleScreen doesn't need conditionals to check the type and grant the correct score.
 
-If drawing was embedded inside update() for every class, pausing the game would mean adding a paused flag inside every class. Each update() method would need to check the  flag and skip movement and game logic if paused (but draw() will be called regardless of paused flag). This tedious approach would mean writing pause checks for every class rather than handling the check in one place(i.e in ShadowAliens). Separating drawing and updating makes the pause feature simple to implement and makes the code easier to extend for additional screens in Project 2.
+The current design is highly extensible. Adding a new enemy type only requires creating a new subclass of EnemyShip, overriding update(), draw(), getScore(), and then adding one case to EnemyShip.create(). BattleScreen requires no changes at all, demonstrating the open-closed principle. 
+
+Overall, the hierarchy introduced in Project 2 leaves the codebase significantly more maintainable than Project 1, where all logic was centralised in ShadowAliens.
 
 ## Design Report References
 
