@@ -162,7 +162,8 @@ public class BattleScreen implements Screen {
             if (explosions.get(i).isDurationComplete()) explosions.remove(i);
         }
         for (int i = PowerUps.size() - 1; i >= 0; i--) {
-            if (PowerUps.get(i).isOffScreen()) PowerUps.remove(i);
+            if (PowerUps.get(i).isOffScreen() || PowerUps.get(i).isActive())
+                PowerUps.remove(i);
         }
 
         // Wave / game-over transitions
