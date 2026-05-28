@@ -4,16 +4,34 @@ import game.ShadowAliens;
 
 import java.util.Properties;
 
+/**
+ * enemy moves along x axis at the same time as it moves down y axis
+ * while bouncing between screen edges.
+ */
 public class StrafingEnemy extends EnemyShip {
     private int directionX = 0;
     private final int scoreValue;
 
+    /**
+     * Constructs a strafing enemy for a given wave and index.
+     *
+     * @param gameProps game properties file
+     * @param wave wave number
+     * @param index enemy index within wave
+     */
     public StrafingEnemy(Properties gameProps, int wave, int index) {
         super(gameProps, wave, index, "strafing");
         scoreValue = Integer.parseInt(
                 gameProps.getProperty("score.destroyedEnemy.strafing"));
     }
 
+    /**
+     * Updates enemy movement.
+     * Moves vertically until arrival, then moves horizontally also
+     * and bounces off screen edges.
+     *
+     * @param actualSpeed speed scaling factor
+     */
     @Override
     public void update(double actualSpeed) {
         if (!hasArrived()) {
