@@ -3,6 +3,7 @@
 # Shadow Aliens
 
 ## Running Instructions
+
 Download and extract the zip file for this project.
 Open IntelliJ IDEA.
 Click Open and select the extracted folder.
@@ -28,6 +29,7 @@ Project 1 had a single enemy type that moved straight down the screen. Project 2
 Project 1 had no BattleScreen or GameEntity class, so all game logic was inside ShadowAliens. The single EnemyShip class handled all enemy behaviour. Ship existed as a base class for shared movement behaviour. 
 
 Several significant and deep changes were made:
+
 1.GameEntity was introduced as a new abstract base class above Ship, to encapsulate shared state like position, image, and bounding box (this logic was previously scattered across PlayerShip, EnemyShip, explosion etc.)
 2.Ship was modified to extend GameEntity, which cascaded changes down to PlayerShip and EnemyShip. Both their constructors, getters, and setters were updated to align with the new hierarchy.
 3.The existing EnemyShip class was made abstract. 3 concrete subclasses of EnemyShip, RegularEnemy, StrafingEnemy, and ShootingEnemy, were added, each overriding getScore() and/or update(). 
