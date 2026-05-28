@@ -1,242 +1,178 @@
 package game;
+
 import bagel.*;
-import bagel.util.Colour;
+import game.Screens.*;
+import game.Ships.PlayerShip;
+
 import java.util.Properties;
 
 /**
- * Main game class that manages initialising the screens and game objects
+ * Main entry point for Shadow Aliens.
+ * Manages screen state transitions, dev-mode controls, and game speed.
  */
 public class ShadowAliens extends AbstractGame {
-    private static Properties gameProps;
     public static double screenWidth;
     public static double screenHeight;
 
-    private final Lives lives;
-    private final Wave wave;
-    private final Score score;
+    private Screen currentScreen;
+    private GameState state;
+    private int timeScale = 1;
+    private double actualSpeed = 1.0;
+    private final Properties gameProps;
     private final PlayerShip playerShip;
 
-    private double frameCount = 0;        // tracks game time
-    private int timeScale = 1;
-    private boolean invincible = false;
-
-    private final EnemyShip[] enemies;
-    private int enemyCount = 0;
-
-    private Projectile[] projectiles = new Projectile[1000]; // see ASSUMPTIONS
-    private int projectileCount = 0;
-
-    private Explosion[] explosions = new Explosion[1000];    // see ASSUMPTIONS
-    private int explosionCount = 0;
-
-    private final PauseScreen pauseScreen;
-    private boolean paused = false;
-
+    /**
+     * Constructs the game, initialises the window, loads properties,
+     *
+     * @param gameProps the loaded game properties file
+     */
     public ShadowAliens(Properties gameProps) {
         super(Integer.parseInt(gameProps.getProperty("window.width")),
                 Integer.parseInt(gameProps.getProperty("window.height")),
                 "Shadow Aliens");
 
-        ShadowAliens.gameProps = gameProps;
+        this.gameProps = gameProps;
         screenWidth = Integer.parseInt(gameProps.getProperty("window.width"));
-        screenHeight = Integer.parseInt(gameProps.getProperty("window.height"));
-
-        // set background colour
-        String[] bgColour = gameProps.getProperty(
-                "background.colour").split(",");
-        Window.setClearColour(Double.parseDouble(bgColour[0]),
-                Double.parseDouble(bgColour[1]),
-                Double.parseDouble(bgColour[2]));
-
-        // set text colour
-        String[] textColour = gameProps.getProperty("text.colour").split(",");
-        Colour colour = new Colour(Double.parseDouble(textColour[0]),
-                Double.parseDouble(textColour[1]),
-                Double.parseDouble(textColour[2]));
-
-        Font font = new Font(gameProps.getProperty("text.font"),
-                Integer.parseInt(gameProps.getProperty("text.size")));
-
-        // Initialise all game entities
-        pauseScreen = new PauseScreen(gameProps, colour);
-        lives = new Lives(gameProps);
-        wave = new Wave(gameProps, font, colour);
-        score = new Score(gameProps, font, colour);
+        screenHeight = Integer.parseInt(
+                gameProps.getProperty("window.height"));
         playerShip = new PlayerShip(gameProps);
-
-        // count how many enemies exist
-        while (gameProps.getProperty("enemy." + enemyCount + ".posX") != null) {
-            enemyCount++;
-        }
-
-        enemies = new EnemyShip[enemyCount];
-
-        // create the enemies
-        for (int i = 0; i < enemyCount; i++) {
-            enemies[i] = new EnemyShip(gameProps, i);
-        }
+        state = GameState.START;
+        currentScreen = new StartScreen(gameProps, playerShip);
+        String[] bg = gameProps.getProperty("background.colour").split(",");
+        Window.setClearColour(
+                Double.parseDouble(bg[0]),
+                Double.parseDouble(bg[1]),
+                Double.parseDouble(bg[2]));
     }
-
-    private void resetGame() {
-        frameCount = 0;
-        timeScale = 1;
-
-        paused = false;
-        invincible = false;
-        projectileCount = 0;
-        explosionCount = 0;
-
-        lives.reset();
-        score.reset();
-        playerShip.reset();
-
-        // recreate all enemies
-        for (int i = 0; i < enemyCount; i++) {
-            enemies[i] = new EnemyShip(gameProps, i);
-        }
-    }
-
-    private void drawShip(Ship ship) {
-        ship.drawShip();
-    }
-
-    private void drawBattleScreen(){
-        // First draw background/effects
-        for (int i = 0; i < explosionCount; i++) {
-            if (explosions[i].isDestroyed()) continue;
-            explosions[i].drawExplosion();
-        }
-
-        // then draw ships on top of effects
-        for (int i = 0; i < enemyCount; i++) {
-            if (enemies[i].isDestroyed()) continue;
-            drawShip(enemies[i]);
-        }
-        drawShip(playerShip);
-
-        // then draw projectiles on top of ships
-        for (int i = 0; i < projectileCount; i++) {
-            if (projectiles[i] == null || projectiles[i].isDestroyed()) continue;
-            projectiles[i].drawProjectile();
-        }
-
-        // finally, draw information on top of all other images
-        lives.drawLives();
-        wave.drawWave();
-        score.drawScore();
-    }
-
 
     /**
-     * Run and render the next frame.
-     * @param input The current mouse/keyboard input.
+     * Called once per frame.
+     * Handles dev controls (in BATTLE/PAUSE only), state transitions,
+     * then delegates update and draw to the current screen.
+     *
+     * @param input the current frame's input
      */
     @Override
-    protected void update(Input input) {
-        drawBattleScreen();
-
-        if (input.wasPressed(Keys.ESCAPE)) {
-            paused = !paused;
+    public void update(Input input) {
+        if (state == GameState.BATTLE || state == GameState.PAUSE) {
+            handleDevControls(input);
         }
-
-        // INPUT: Dev-mode Controls
-        // increase speed by factor of 1
-        if (input.wasPressed(Keys.G)) {
-            if (timeScale == -2) timeScale = 1;     // skip speed of 0
-            else if (timeScale < 0) timeScale++;
-            else timeScale++;
-        }
-
-        // decrease speed by factor of 1
-        if (input.wasPressed(Keys.F)) {
-            if (timeScale == 1) timeScale = -2;    // skip speed of 0
-            else if (timeScale < 0) timeScale--;
-            else timeScale--;
-        }
-
-        if (input.wasPressed(Keys.I)) {
-            invincible = !invincible;
-        }
-        if (input.wasPressed(Keys.R)) {
-            resetGame();
-        }
-
-        // if actualSpeed > 1, then speed up, otherwise slow down
-        double actualSpeed = timeScale > 0 ?
-                timeScale : 1.0 / Math.abs(timeScale);
-
-        // skip the game logic since game is frozen
-        if (paused) {
-            pauseScreen.draw(timeScale, actualSpeed);
-            return;
-        }
-
-        // only run game logic when not paused:
-        frameCount += actualSpeed;
-
-        playerShip.update(input, actualSpeed);
-
-        for (EnemyShip enemy : enemies) {
-            enemy.update(frameCount, actualSpeed);
-        }
-
-        for (int i = 0; i < explosionCount; i++) {
-            explosions[i].update(actualSpeed);
-        }
-
-        // check if shoot
-        if (input.wasPressed(Keys.SPACE) && playerShip.canShoot()){
-            projectiles[projectileCount++] = new Projectile(gameProps,
-                    playerShip.getX(), playerShip.getY());
-            playerShip.resetCoolDownTimer();
-        }
-
-        // check if enemy collides with player
-        for (int j = 0; j < enemyCount; j++) {
-            if (enemies[j].isDestroyed()) continue;
-
-            // if collision, destroy enemy
-            // and player loses a life, unless invincible
-            if (playerShip.getBoundingBoxAt().intersects(
-                    enemies[j].getBoundingBoxAt())){
-                enemies[j].setDestroyed();
-                if (!invincible) {
-                    lives.decrementLives();
-                    // no lives left
-                    if (lives.getLives() <= 0) {
-                        Window.close();
-                    }
-                }
-            }
-        }
-
-
-        // update ALL projectiles every frame
-        for (int i = 0; i < projectileCount; i++) {
-            if (projectiles[i] == null || projectiles[i].isDestroyed()){
-                continue;
-            }
-            projectiles[i].update(actualSpeed);
-
-            // check if any enemy collides with this projectile
-            for (int j = 0; j < enemyCount; j++) {
-                if (enemies[j].isDestroyed()) continue;
-
-                // destroy both and increment score and launch an explosion
-                if (projectiles[i].getBoundingBoxAt().intersects(
-                        enemies[j].getBoundingBoxAt())){
-                       projectiles[i].setDestroyed();
-                       enemies[j].setDestroyed();
-                       explosions[explosionCount++] = new Explosion(gameProps,
-                               enemies[j].getX(), enemies[j].getY());
-                       score.incrementScore();
-                       break;       // stop checking enemies for this projectile
-                }
-            }
-        }
-
+        handleStateTransitions(input);
+        currentScreen.update(input);
+        currentScreen.draw();
     }
 
+    /**
+     * Handles dev-mode keypresses in BATTLE and PAUSE states:
+     *
+     * @param input the current frame's input
+     */
+    private void handleDevControls(Input input) {
+        if (input.wasPressed(Keys.G)) {
+            timeScale++;
+            recalcActualSpeed();
+        }
+        if (input.wasPressed(Keys.F)) {
+            timeScale--;
+            recalcActualSpeed();
+        }
+        if (input.wasPressed(Keys.I)) {
+            playerShip.toggleDevInvincible();
+        }
+        if (input.wasPressed(Keys.R)) {
+            timeScale = 1;
+            actualSpeed = 1.0;
+            playerShip.reset();
+            state = GameState.START;
+            currentScreen = new StartScreen(gameProps, playerShip);
+        }
+        if (input.wasPressed(Keys.N)) {
+            if (state == GameState.BATTLE) {
+                ((BattleScreen) currentScreen).nextWave();
+            } else if (state == GameState.PAUSE) {
+                BattleScreen battleScreen =
+                        ((PauseScreen) currentScreen).getBattleScreen();
+                battleScreen.nextWave();
+                if (battleScreen.isGameWon())  {
+                    state = GameState.END;
+                    currentScreen = new EndScreen(gameProps, playerShip, true);
+                }
+            }
+        }
+    }
+
+    /**
+     * Handles screen state transitions based on input and game conditions.
+     *
+     * @param input the current frame's input
+     */
+    private void handleStateTransitions(Input input) {
+        switch (state) {
+            case START:
+                if (input.wasPressed(Keys.SPACE)) {
+                    state = GameState.BATTLE;
+                    currentScreen = new BattleScreen(gameProps, playerShip);
+                }
+                break;
+
+            case BATTLE:
+                BattleScreen battleScreen = (BattleScreen) currentScreen;
+                if (input.wasPressed(Keys.ESCAPE)) {
+                    state = GameState.PAUSE;
+                    currentScreen = new PauseScreen(
+                            gameProps, battleScreen, timeScale, actualSpeed);
+                } else if (battleScreen.isGameOver()) {
+                    state = GameState.END;
+                    currentScreen = new EndScreen(gameProps, playerShip, false);
+                } else if (battleScreen.isGameWon()) {
+                    state = GameState.END;
+                    currentScreen = new EndScreen(gameProps, playerShip, true);
+                }
+                break;
+
+            case PAUSE:
+                if (input.wasPressed(Keys.ESCAPE)) {
+                    state = GameState.BATTLE;
+                    currentScreen =
+                            ((PauseScreen) currentScreen).getBattleScreen();
+                }
+                break;
+
+            case END:
+                if (input.wasPressed(Keys.SPACE)) {
+                    timeScale = 1;
+                    actualSpeed = 1.0;
+                    state = GameState.BATTLE;
+                    currentScreen = new BattleScreen(gameProps, playerShip);
+                }
+                break;
+        }
+    }
+
+    /**
+     * Recalculates actualSpeed from timeScale
+     */
+    private void recalcActualSpeed() {
+        if (timeScale >= 1) {
+            actualSpeed = timeScale;
+        } else {
+            actualSpeed = 1.0 / (2 - timeScale);
+        }
+        if (state == GameState.BATTLE) {
+            ((BattleScreen) currentScreen).setActualSpeed(actualSpeed);
+        } else if (state == GameState.PAUSE) {
+            ((PauseScreen) currentScreen).setTimeScale(timeScale, actualSpeed);
+            ((PauseScreen) currentScreen).
+                    getBattleScreen().setActualSpeed(actualSpeed);
+        }
+    }
+
+    /**
+     * Application entry point. Reads the game data file path from the
+     * JVM argument "gameData", defaults to "gameData.properties" if absent.
+     *
+     * @param args command-line arguments (unused)
+     */
     public static void main(String[] args) {
         String fileName =  System.getProperty("gameData");
         // default file path if no path provided

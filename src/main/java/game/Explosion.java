@@ -1,40 +1,40 @@
 package game;
+
 import bagel.*;
 import java.util.Properties;
 
-public class Explosion {
+/**
+ * Represents an explosion that exists for a set duration.
+ */
+public class Explosion extends GameEntity {
     private double duration;
-    private final double explosionX;
-    private final double explosionY;
-    private boolean destroyed = false;
-    private final Image explosionImage;
 
-    public Explosion(Properties gameProps, double enemyX, double enemyY ){
-        explosionX = enemyX;
-        explosionY = enemyY;
-        duration = Integer.parseInt(gameProps.getProperty("explosion.duration"));
-        explosionImage = new Image (gameProps.getProperty("explosion.image"));
+    /**
+     * Constructs an explosion at given position using game properties.
+     *
+     * @param gameProps the loaded game properties file
+     * @param x x-coordinate
+     * @param y y-coordinate
+     * @param large size of explosion (true if large)
+     */
+    public Explosion(Properties gameProps, double x, double y, boolean large) {
+        super(new Image(gameProps.getProperty(
+                large ? "explosion.large.image" : "explosion.small.image")), x, y);
+        this.duration = Integer.parseInt(gameProps.getProperty(
+                large ? "explosion.large.duration" : "explosion.small.duration"));
     }
 
-    public void drawExplosion() {
-        explosionImage.draw(explosionX, explosionY);
-    }
-
-    public void decrementDuration(double actualSpeed){
+    /**
+     * Updates remaining duration of the explosion.
+     *
+     * @param actualSpeed speed scaling factor
+     */
+    @Override
+    public void update(double actualSpeed) {
         duration -= actualSpeed;
-        if (duration <= 0){
-            destroyed = true;
-        }
     }
 
-    public void update(double actualSpeed){
-        if (destroyed){
-            return;
-        }
-        decrementDuration(actualSpeed);
-    }
-
-    public boolean isDestroyed() {
-        return destroyed;
+    public boolean isDurationComplete() {
+        return duration <= 0;
     }
 }

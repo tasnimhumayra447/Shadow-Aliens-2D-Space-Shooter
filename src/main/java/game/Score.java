@@ -1,9 +1,13 @@
 package game;
+
 import bagel.DrawOptions;
 import bagel.Font;
 import bagel.util.Colour;
 import java.util.Properties;
 
+/**
+ * Manages and displays the player's score.
+ */
 public class Score {
     private int score;
     private final Colour textColour;
@@ -11,30 +15,36 @@ public class Score {
     private final double scoreX, scoreY;
     private final Font font;
 
-    public Score (Properties gameProps, Font font, Colour colour){
+    /**
+     * Constructs a score display using game properties file
+     *
+     * @param gameProps loaded properties file
+     * @param font font used to render the score
+     * @param colour colour used to render the score text
+     */
+    public Score(Properties gameProps, Font font, Colour colour) {
         this.font = font;
         textColour = colour;
         scoreText = gameProps.getProperty("score.text");
         String[] scorePosition = gameProps.getProperty("score.pos").split(",");
         scoreX = Double.parseDouble(scorePosition[0]);
         scoreY = Double.parseDouble(scorePosition[1]);
-    }
-
-    public void incrementScore(){
-        score ++;
+        score = 0;
     }
 
     public void incrementScore(int amount) {
         score += amount;
     }
 
-    public void drawScore(){
-        DrawOptions options = new DrawOptions();
-        font.drawString(scoreText + " " + score, scoreX, scoreY,
-                options.setBlendColour(textColour));
+    public void decrementScore(int amount) {
+        score = Math.max(0, score - amount);
     }
 
-    public void reset() {
-        score = 0;
+    /**
+     * Draws the current score on the screen.
+     */
+    public void drawScore() {
+        font.drawString(scoreText + " " + score, scoreX, scoreY,
+                new DrawOptions().setBlendColour(textColour));
     }
 }

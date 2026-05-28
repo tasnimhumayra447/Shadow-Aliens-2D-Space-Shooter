@@ -1,28 +1,45 @@
 package game;
+
 import bagel.*;
 import bagel.util.Colour;
 import java.util.Properties;
 
+/**
+ * Manages and displays the current game wave.
+ */
 public class Wave {
-    private final String waveText;
-    private final Colour textColour;
-    private final double waveX, waveY;
-    private final int WAVE_NUM = 1;
+    private int currentWave;
     private final Font font;
+    private final Colour colour;
+    private final String waveText;
+    private final double waveX, waveY;
 
-    public Wave(Properties gameProps, Font font, Colour colour){
-        String[] wavesPosition = gameProps.getProperty("wave.pos").split(",");
-        textColour = colour;
-        waveX = Double.parseDouble(wavesPosition[0]);
-        waveY = Double.parseDouble(wavesPosition[1]);
-        waveText =  gameProps.getProperty("wave.text");
+    /**
+     * Constructs a wave display using game properties file
+     *
+     * @param gameProps loaded properties file
+     * @param font font used to render the wave text
+     * @param colour colour used to render the wave text
+     */
+    public Wave(Properties gameProps, Font font, Colour colour) {
+        String[] wavePos = gameProps.getProperty("wave.pos").split(",");
         this.font = font;
+        this.colour = colour;
+        this.waveText = gameProps.getProperty("wave.text");
+        this.waveX = Double.parseDouble(wavePos[0]);
+        this.waveY = Double.parseDouble(wavePos[1]);
+        this.currentWave = 1;
     }
 
-    public void drawWave(){
-        DrawOptions options = new DrawOptions();
-        font.drawString(waveText + " " + WAVE_NUM, waveX, waveY,
-                options.setBlendColour(textColour));
+    /**
+     * Draws the current wave number on the screen.
+     */
+    public void drawWave() {
+        font.drawString(waveText + " " + currentWave, waveX, waveY,
+                new DrawOptions().setBlendColour(colour));
     }
 
+    public void increment() {
+        currentWave++;
+    }
 }
