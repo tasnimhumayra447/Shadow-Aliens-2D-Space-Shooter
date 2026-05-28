@@ -37,7 +37,7 @@ Several significant and deep changes were made:
 Ship, as a base class, showed some use of inheritance and abstraction, but there was no polymorphism across enemy types, as there was 1 enemy class. Multiple logics (text displays, player movement, collision checks) within ShadowAliens led to low cohesion and violated the single responsibility principle. It also made it difficult to extend, as adding a new enemy type would require modifying the main game class directly, violating the open-closed principle. No GameEntity abstraction existed, so shared behaviour, like image rendering, was repeated across all classes.
 
 ### How the Extension Was Made Harder
-The existing Ship class gave a foundation to build on, and EnemyShip extended it naturally. However, the absence of GameEntity meant position attributes and image rendering had to be abstracted from scratch before the enemy hierarchy could be built; this required changes across multiple existing classes before new enemy types could even be written. The lack of BattleScreen meant significant restructuring of ShadowAliens was necessary. Had these abstractions existed in Project 1, adding new enemy types would have satisfied the Open-Closed principle and required only new subclasses; so BattleScreen could call e.getScore(), e.update(), and e.draw() polymorphically on ArrayList<EnemyShip> without changes to its existing code.
+The existing Ship class gave a foundation to build on, and EnemyShip extended it naturally. However, the absence of GameEntity meant position attributes and image rendering had to be abstracted from scratch before the enemy hierarchy could be built; this required changes across multiple existing classes before new enemy types could even be written. The lack of BattleScreen meant that significant restructuring of ShadowAliens was necessary. Had these abstractions existed in Project 1, adding new enemy types would have satisfied the Open-Closed principle and required only new subclasses; so BattleScreen could call e.getScore(), e.update(), and e.draw() polymorphically on the enemy ArrayList without changes to its existing code.
 
 ## Outcome
 Introducing GameEntity above Ship means shared behaviour is abstracted once and inherited everywhere, improving cohesion as each class has a single well-defined responsibility, and BattleScreen coordinates them without duplicating any internal behaviour.
@@ -48,7 +48,7 @@ Placing shoot() inside EnemyShip with a default null return and letting Shooting
 
 The current design is highly extensible. Adding new enemy types only requires creating new subclasses of EnemyShip, overriding update() & getScore(), and then adding one case to EnemyShip.create(). BattleScreen requires no changes at all, demonstrating the open-closed principle. The one minor limitation is that EnemyShip.create() must be modified for each new type.
 
-Overall, the hierarchy introduced in Project 2 leaves the codebase significantly more maintainable than Project 1, where all logic was in ShadowAliens, making extensions require deep modification of existing code.
+Overall, the hierarchy introduced in Project 2 leaves the codebase significantly more maintainable than Project 1.
 
 ## Design Report References
 
