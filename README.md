@@ -1,57 +1,113 @@
 # SWEN20003 Semester 1, 2026
-# Project 2b
 # Shadow Aliens
 
-## Running Instructions
+## Running the Project
 
-Download and extract the zip file for this project.
-Open IntelliJ IDEA.
-Click Open and select the extracted folder.
-Select ShadowAliens.java and click the green Run button.
+Requirements
 
-## Assumptions
+- Java 25
+- IntelliJ IDEA
 
-* None
+Clone the repository:
 
-## AI Statement
-I have not used any AI tools or technologies to prepare this assessment. 
+```bash
+git clone https://github.com/tasnimhumayra447/Shadow-Aliens-2D-Space-Shooter.git
+```
 
-## Code References
+Open the project in IntelliJ and run the main application.
 
-* I did not use any code references 
+## Demo
 
-## Design Report
+* https://youtu.be/sFo7vu8Grx4
 
-## Extension:
-Project 1 had a single enemy type that moved straight down the screen. Project 2 extended this with three types: regular, strafing, and shooting enemies, each with unique behaviour.
+## Features
 
-### Code Changes and Depth
-Project 1 had no BattleScreen or GameEntity class, so all game logic was inside ShadowAliens. The single EnemyShip class handled all enemy behaviour. Ship existed as a base class for shared movement behaviour. 
+- Real-time player movement and cooldown-based shooting
+- Three enemy types:
+    - Regular
+    - Strafing
+    - Shooting
+- Progressive wave system with increasing difficulty
+- Four power-ups:
+    - Shield
+    - Life
+    - Cooldown
+    - Engine
+- Collision detection and explosion effects
+- Score and life tracking
+- Multiple game states:
+    - Start
+    - Battle
+    - Pause
+    - End
+- Developer mode:
+    - Increase/decrease game speed
+    - Toggle invincibility
+    - Skip to next wave
+    - Restart game
+- External configuration using `gameData.properties`
 
-Several significant and deep changes were made:
+## Technologies
 
-1.GameEntity was introduced as a new abstract base class above Ship, to encapsulate shared state like position, image, and bounding box (this logic was previously scattered across PlayerShip, EnemyShip, explosion etc.)
-2.Ship was modified to extend GameEntity, which cascaded changes down to PlayerShip and EnemyShip. Both their constructors, getters, and setters were updated to align with the new hierarchy.
-3.The existing EnemyShip class was made abstract. 3 concrete subclasses of EnemyShip, RegularEnemy, StrafingEnemy, and ShootingEnemy, were added, each overriding getScore() and/or update(). 
-4.ShadowAliens was simplified to a thin entry point. BattleScreen was introduced as a dedicated class to manage gameplay logic extracted from ShadowAliens, and new methods loadWave(), checkCollisions(), isWaveComplete() were added. 
+- Java
+- Object-Oriented Programming
+- IntelliJ IDEA
+- Bagel Game Engine
 
-### Design Principles in Project 1
-Ship, as a base class, showed some use of inheritance and abstraction, but there was no polymorphism across enemy types, as there was 1 enemy class. Multiple logics (text displays, player movement, collision checks) within ShadowAliens led to low cohesion and violated the single responsibility principle. It also made it difficult to extend, as adding a new enemy type would require modifying the main game class directly, violating the open-closed principle. No GameEntity abstraction existed, so shared behaviour, like image rendering, was repeated across all classes.
+## Object-Oriented Design
 
-### How the Extension Was Made Harder
-The existing Ship class gave a foundation to build on, and EnemyShip extended it naturally. However, the absence of GameEntity meant position attributes and image rendering had to be abstracted from scratch before the enemy hierarchy could be built; this required changes across multiple existing classes before new enemy types could even be written. The lack of BattleScreen meant that significant restructuring of ShadowAliens was necessary. Had these abstractions existed in Project 1, adding new enemy types would have satisfied the Open-Closed principle and required only new subclasses; so BattleScreen could call e.getScore(), e.update(), and e.draw() polymorphically on the enemy ArrayList without changes to its existing code.
+The project applies several OOP principles:
 
-## Outcome
-Introducing GameEntity above Ship means shared behaviour is abstracted once and inherited everywhere, improving cohesion as each class has a single well-defined responsibility, and BattleScreen coordinates them without duplicating any internal behaviour.
+- Inheritance for different enemy and power-up types
+- Polymorphism through shared entity behaviour
+- Encapsulation of game state and entity logic
+- Delegation of responsibilities across game components
+- Modular architecture for maintainability and extensibility
 
-Wave loading uses the method EnemyShip.create() to encapsulate and centralise object creation, so BattleScreen is unaware of specific enemy types entirely. This reduces coupling between BattleScreen and the enemy hierarchy as BattleScreen never references any enemy subclass directly.
+## Controls
 
-Placing shoot() inside EnemyShip with a default null return and letting ShootingEnemy override means BattleScreen can call e.shoot() on every enemy without any instanceof checks (further reducing coupling), demonstrating polymorphism. Similarly, having getScore() as an abstract method inside EnemyShip means each subclass owns its score value, so BattleScreen doesn't need conditionals to check the type and grant the correct score.
+### Gameplay
 
-The current design is highly extensible. Adding new enemy types only requires creating new subclasses of EnemyShip, overriding update() & getScore(), and then adding one case to EnemyShip.create(). BattleScreen requires no changes at all, demonstrating the open-closed principle. The one minor limitation is that EnemyShip.create() must be modified for each new type.
+| Key   | Action |
+|-------|--------|
+| A / D | Move   |
+| Space | Shoot  |
+| Esc   | Pause  |
 
-Overall, the hierarchy introduced in Project 2 leaves the codebase significantly more maintainable than Project 1.
+### Developer Mode
 
-## Design Report References
+| Key  | Action               |
+|------|----------------------|
+| G    | Increase game speed  |
+| F    | Decrease game speed  |
+| I    | Toggle invincibility |
+| N    | Skip to next wave    |
+| R    | Restart game         |
 
-* I did not use any external references 
+## Configuration
+
+Game settings are loaded dynamically from `gameData.properties`.
+
+This file controls:
+
+- Window size
+- Enemy spawning times
+- Wave configuration
+- Player attributes
+- Power-ups
+- UI text
+- Images
+- Scoring
+- Timing values
+
+## Screenshots
+
+- Start screen
+![img.png](images/img.png)
+- Battle screen (Gameplay)
+![img_1.png](images/img_1.png)
+![img_2.png](images/img_2.png)
+- Pause screen
+![img_3.png](images/img_3.png)
+- End screen
+![img_4.png](images/img_4.png)
